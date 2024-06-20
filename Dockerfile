@@ -10,11 +10,14 @@ WORKDIR /usr/src/app
 # Copy app files
 COPY . .
 
-# Install only necessary production dependencies
-RUN bun install --frozen-lockfile --production
+# Install dependencies
+RUN bun install --production
+
+# Install Prisma globally if needed (optional)
+RUN bun add prisma
 
 # Generate Prisma
-RUN bun run generate
+RUN bunx prisma generate
 
 # Run the application
 CMD ["bun", "start"]
