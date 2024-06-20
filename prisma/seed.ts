@@ -4,21 +4,20 @@ const prisma = new PrismaClient();
 import { dataProducts } from "./data/products";
 
 async function main() {
-  console.log("Hello Prisma Seed");
+  // for (const product of dataProducts) {
+  //   const newProductResult = await prisma.product.create({
+  //     data: product,
+  //   });
+  //   console.log(`Product: ${newProductResult.name}`);
+  // }
 
   for (const product of dataProducts) {
-    const newProductResult = await prisma.product.create({
-      data: product,
+    const newProductResult = await prisma.product.upsert({
+      where: { slug: product.slug },
+      update: product,
+      create: product,
     });
-    console.log(`Product: ${newProductResult.name}`);
   }
-
-  // for (const product of dataProducts) {
-  //   const newProductResult = await prisma.product.upsert({
-  //     where: { slug: product.slug },
-  //     update: product,
-  //     create: product,
-  //   });
 }
 
 main()
