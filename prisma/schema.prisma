@@ -11,7 +11,7 @@ model Product {
   id          String   @id @default(cuid()) // abc123xyz
   slug        String // jackson-freestyle
   name        String // Jackson Freestyle
-  imageURL    String // https://example.com/jackson-freestyle-1690212627.jpg
+  imageURL    String   @db.Text // https://example.com/jackson-freestyle-1690212627.jpg
   description String // This skate is ideal for skaters landing single jumps and starting doubles
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
