@@ -4,13 +4,6 @@ const prisma = new PrismaClient();
 import { dataProducts } from "./data/products";
 
 async function main() {
-  // for (const product of dataProducts) {
-  //   const newProductResult = await prisma.product.create({
-  //     data: product,
-  //   });
-  //   console.log(`Product: ${newProductResult.name}`);
-  // }
-
   for (const product of dataProducts) {
     const newProductResult = await prisma.product.upsert({
       where: { slug: product.slug },

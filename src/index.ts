@@ -1,9 +1,19 @@
-import { Hono } from 'hono'
+import { Hono } from "hono";
 
-const app = new Hono()
+import { prisma } from "./libs/db";
 
-app.get('/', (c) => {
-  return c.text('Hello Hono!')
-})
+const app = new Hono();
 
-export default app
+app.get("/", (c) => {
+  return c.json({
+    message: "FigureOne Skates Backend API",
+    products: "/products",
+  });
+});
+
+app.get("/products", async (c) => {
+  const products = await prisma.product.findMany();
+  return c.json(products);
+});
+
+export default app;
