@@ -1,5 +1,36 @@
 # FigureOne Skates Backend
 
+## REST API Specification
+
+- Production: ``
+- Local: `http://localhost:3000`
+
+Products:
+
+| Endpoint        | HTTP     | Description          |
+| --------------- | -------- | -------------------- |
+| `/products`     | `GET`    | Get all products     |
+| `/products/:id` | `GET`    | Get product by id    |
+| `/products`     | `POST`   | Add new product      |
+| `/products`     | `DELETE` | Delete all products  |
+| `/products/:id` | `DELETE` | Delete product by id |
+| `/products/:id` | `PUT`    | Update product by id |
+
+Auth:
+
+| Endpoint           | HTTP     | Permission    |
+| ------------------ | -------- | ------------- |
+| `/users`           | `GET`    | Public        |
+| `/users/:username` | `GET`    | Public        |
+| `/auth/register`   | `POST`   | Public        |
+| `/auth/login`      | `POST`   | Public        |
+| `/auth/me`         | `GET`    | Authenticated |
+| `/auth/logout`     | `POST`   | Authenticated |
+| `/cart`            | `GET`    | Authenticated |
+| `/cart/items`      | `POST`   | Authenticated |
+| `/cart/items/:id`  | `DELETE` | Authenticated |
+| `/cart/items/:id`  | `PUT`    | Authenticated |
+
 ## Getting Started
 
 To install dependencies:
@@ -14,7 +45,7 @@ To run:
 bun run dev
 ```
 
-open http://localhost:3000
+Open <http://localhost:3000>
 
 ## Prisma Setup
 
@@ -26,6 +57,3 @@ Next steps:
 2. Set the provider of the datasource block in schema.prisma to match your database: postgresql, mysql, sqlite, sqlserver, mongodb or cockroachdb.
 3. Run prisma db pull to turn your database schema into a Prisma schema.
 4. Run prisma generate to generate the Prisma Client. You can then start querying your database.
-
-More information in our documentation:
-https://pris.ly/d/getting-started

@@ -19,4 +19,20 @@ app.get("/products", async (c) => {
   return c.json(products);
 });
 
+// | `/users`           | `GET`    | Public        |
+// | `/users/:username` | `GET`    | Public        |
+// | `/auth/register`   | `POST`   | Public        |
+// | `/auth/login`      | `POST`   | Public        |
+// | `/auth/me`         | `GET`    | Authenticated |
+// | `/auth/logout`     | `POST`   | Authenticated |
+
+app.get("/users", async (c) => {
+  const users = await prisma.user.findMany({
+    select: {
+      id: true,
+      username: true,
+    },
+  });
+});
+
 export default app;

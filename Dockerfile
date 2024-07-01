@@ -1,9 +1,6 @@
 # Use Bun image from the Docker Hub
 FROM oven/bun:debian
 
-# Set PORT
-ENV PORT=3000
-
 # Create and change to the app directory
 WORKDIR /usr/src/app
 
@@ -11,13 +8,10 @@ WORKDIR /usr/src/app
 COPY . .
 
 # Install dependencies
-RUN bun install --production
-
-# Install Prisma globally if needed (optional)
-RUN bun add prisma
+RUN bun install
 
 # Generate Prisma
-RUN bunx prisma generate
+RUN bun prisma generate
 
 # Run the application
 CMD ["bun", "start"]
