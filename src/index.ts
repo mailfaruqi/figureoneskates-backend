@@ -1,7 +1,9 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { zValidator } from "@hono/zod-validator";
 
 import { prisma } from "./libs/db";
+import { z } from "zod";
 
 const app = new Hono();
 
@@ -19,13 +21,6 @@ app.get("/products", async (c) => {
   return c.json(products);
 });
 
-// | `/users`           | `GET`    | Public        |
-// | `/users/:username` | `GET`    | Public        |
-// | `/auth/register`   | `POST`   | Public        |
-// | `/auth/login`      | `POST`   | Public        |
-// | `/auth/me`         | `GET`    | Authenticated |
-// | `/auth/logout`     | `POST`   | Authenticated |
-
 app.get("/users", async (c) => {
   const users = await prisma.user.findMany({
     select: {
@@ -33,6 +28,69 @@ app.get("/users", async (c) => {
       username: true,
     },
   });
+});
+
+app.get("/users:username", async (c) => {
+  const username = c.req.param("username");
+  const user = await prisma.user.findUnique({
+    where: { username },
+  });
+
+  if (!user) {
+    c.status(404);
+    c.json({ message: "User not found" });
+  }
+});
+
+app.post(
+  "/auth/register",
+  zValidator(
+    "json",
+    z.object({
+      username: z.string(),
+      email: z.string(),
+      password: z.string(),
+    })
+  ),
+  async (c) => {
+    const body = c.req.valid("json");
+    const newUser = prisma.user.create({
+      data: {
+        username: body.username,
+        email: body.email,
+        password: {
+          create: {
+            hash: "",
+          },
+        },
+      },
+    });
+
+    return c.json(newUser);
+  }
+);
+
+app.post(
+  "/auth/login",
+  zValidator(
+    "json",
+    z.object({
+      username: z.string(),
+      password: z.string(),
+    })
+  ),
+  async (c) => {
+    const body = c.req.valid("json");
+    const foundUser = prisma.user.findUnique({
+      where: { username: body.username },
+    });
+
+    return c.json(foundUser);
+  }
+);
+
+app.get("/auth/me", async (c) => {
+  return c.json({ message: "User data" });
 });
 
 export default app;
