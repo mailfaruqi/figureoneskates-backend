@@ -4,6 +4,7 @@ import { zValidator } from "@hono/zod-validator";
 
 import { prisma } from "./libs/db";
 import { z } from "zod";
+import { hashPassword } from "./libs/password";
 
 const app = new Hono();
 
@@ -54,19 +55,30 @@ app.post(
   ),
   async (c) => {
     const body = c.req.valid("json");
-    const newUser = prisma.user.create({
-      data: {
-        username: body.username,
-        email: body.email,
-        password: {
-          create: {
-            hash: "",
+
+    try {
+      const newUser = await prisma.user.create({
+        data: {
+          username: body.username,
+          email: body.email,
+          password: {
+            create: {
+              hash: await hashPassword(body.password),
+            },
           },
         },
-      },
-    });
+      });
 
-    return c.json(newUser);
+      return c.json({
+        message: "Register new user successful",
+        newUser: {
+          username: newUser.username,
+        },
+      });
+    } catch (error) {
+      c.status(400);
+      return c.json({ message: "Cannot register user." });
+    }
   }
 );
 
