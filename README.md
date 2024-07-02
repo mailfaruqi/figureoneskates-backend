@@ -2,7 +2,7 @@
 
 ## REST API Specification
 
-- Production: ``
+- Production: `https://figureoneskates-backend.mailfaruqi.com`
 - Local: `http://localhost:3000`
 
 Products:
@@ -39,21 +39,32 @@ To install dependencies:
 bun install
 ```
 
-To run:
-
-```sh
-bun run dev
-```
-
-Open <http://localhost:3000>
-
 ## Prisma Setup
 
-warn You already have a .gitignore file. Don't forget to add `.env` in it to not commit any private information.
+You already have a .gitignore file. Don't forget to add `.env` in it to not commit any private information.
 
 Next steps:
 
-1. Set the `DATABASE_URL` in the `.env` file to point to your existing database. If your database has no tables yet, read <https://pris.ly/d/getting-started>
-2. Set the provider of the datasource block in schema.prisma to match your database: postgresql, mysql, sqlite, sqlserver, mongodb or cockroachdb.
-3. Run prisma db pull to turn your database schema into a Prisma schema.
-4. Run prisma generate to generate the Prisma Client. You can then start querying your database.
+1. Set the required variables in the `.env` file, form the `.env.example`
+2. Run `docker compose up -d` to run database in local Docker container
+3. Run `bun prisma migrate deploy` to apply migration
+4. Run `bun prisma db seed` to seed initial data
+5. Run `bun prisma generate` to generate the Prisma Client. You can then start querying your database.
+
+## Development
+
+To run:
+
+```sh
+bun dev
+```
+
+## Deployment
+
+To run:
+
+```sh
+bun start
+```
+
+Open <http://localhost:3000>
