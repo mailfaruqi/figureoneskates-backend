@@ -5,6 +5,7 @@ import { zValidator } from "@hono/zod-validator";
 import { prisma } from "./libs/db";
 import { z } from "zod";
 import { hashPassword, verifyPassword } from "./libs/password";
+import { createToken, validateToken } from "./libs/jwt";
 
 const app = new Hono();
 
@@ -123,13 +124,47 @@ app.post(
     }
 
     // create token
+    const token = await createToken(foundUser.id);
 
-    return c.json(foundUser);
+    if (!token) {
+      c.status(400);
+      return c.json({
+        message: "Token failed to create",
+      });
+    }
+
+    return c.json({
+      message: "Login successful",
+      token,
+    });
   }
 );
 
 app.get("/auth/me", async (c) => {
-  return c.json({ message: "User data" });
+  const authHeader = c.req.header("Authorization");
+  if (!authHeader) {
+    c.status(401);
+    return c.json({ message: "Not allowed" });
+  }
+
+  const token = authHeader.split(" ")[1];
+  if (!token) {
+    c.status(401);
+    return c.json({ message: "Token is required" });
+  }
+
+  const decodedToken = await validateToken(token);
+  if (!decodedToken) {
+    c.status(401);
+    return c.json({ message: "Token is invalid" });
+  }
+
+  console.log({ decodedToken });
+
+  return c.json({
+    message: "User data",
+    decodedToken,
+  });
 });
 
 export default app;
