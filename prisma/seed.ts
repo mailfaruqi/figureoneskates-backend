@@ -10,6 +10,7 @@ async function main() {
       update: product,
       create: product,
     });
+    console.info(`Product: ${newProductResult.name}`);
   }
 }
 
