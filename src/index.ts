@@ -1,25 +1,36 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { zValidator } from "@hono/zod-validator";
+import { type User } from "@prisma/client";
 
 import { prisma } from "./libs/db";
 import { z } from "zod";
 import { hashPassword, verifyPassword } from "./libs/password";
-import { createToken, validateToken } from "./libs/jwt";
+import { createToken } from "./libs/jwt";
+import { checkUserToken } from "./middlewares/check-user-token";
 
-const app = new Hono();
+type Bindings = {
+  TOKEN: string;
+};
+
+type Variables = {
+  user: User;
+};
+
+const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
 app.use("/*", cors());
 
 app.get("/", (c) => {
   return c.json({
-    message: "FigureOne Skates Backend API",
+    message: "Amazing Safari Backend API",
     products: "/products",
   });
 });
 
 app.get("/products", async (c) => {
   const products = await prisma.product.findMany();
+
   return c.json(products);
 });
 
@@ -30,18 +41,29 @@ app.get("/users", async (c) => {
       username: true,
     },
   });
+
+  return c.json(users);
 });
 
-app.get("/users:username", async (c) => {
+app.get("/users/:username", async (c) => {
   const username = c.req.param("username");
+
   const user = await prisma.user.findUnique({
     where: { username },
+    select: {
+      id: true,
+      username: true,
+      createdAt: true,
+      updatedAt: true,
+    },
   });
 
   if (!user) {
     c.status(404);
     c.json({ message: "User not found" });
   }
+
+  return c.json(user);
 });
 
 app.post(
@@ -94,6 +116,7 @@ app.post(
   ),
   async (c) => {
     const body = c.req.valid("json");
+
     const foundUser = await prisma.user.findUnique({
       where: { username: body.username },
       include: {
@@ -120,17 +143,16 @@ app.post(
 
     if (!validPassword) {
       c.status(400);
-      return c.json({ message: "Password incorrect" });
+      return c.json({
+        message: "Password incorrect",
+      });
     }
 
-    // create token
     const token = await createToken(foundUser.id);
 
     if (!token) {
       c.status(400);
-      return c.json({
-        message: "Token failed to create",
-      });
+      return c.json({ message: "Token failed to create" });
     }
 
     return c.json({
@@ -140,30 +162,42 @@ app.post(
   }
 );
 
-app.get("/auth/me", async (c) => {
-  const authHeader = c.req.header("Authorization");
-  if (!authHeader) {
-    c.status(401);
-    return c.json({ message: "Not allowed" });
-  }
-
-  const token = authHeader.split(" ")[1];
-  if (!token) {
-    c.status(401);
-    return c.json({ message: "Token is required" });
-  }
-
-  const decodedToken = await validateToken(token);
-  if (!decodedToken) {
-    c.status(401);
-    return c.json({ message: "Token is invalid" });
-  }
-
-  console.log({ decodedToken });
+app.get("/auth/me", checkUserToken(), async (c) => {
+  const user = c.get("user");
 
   return c.json({
     message: "User data",
-    decodedToken,
+    user,
+  });
+});
+
+app.get("/cart", checkUserToken(), async (c) => {
+  const user = c.get("user");
+
+  const existingOrderCart = await prisma.order.findFirst({
+    where: {
+      userId: user.id,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  if (!existingOrderCart) {
+    const newOrderCart = await prisma.order.create({
+      data: {
+        userId: user.id,
+      },
+    });
+    return c.json({
+      message: "Shopping cart data",
+      cart: newOrderCart,
+    });
+  }
+
+  return c.json({
+    message: "Shopping cart data",
+    cart: existingOrderCart,
   });
 });
 
